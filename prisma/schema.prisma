@@ -1,0 +1,237 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organisation {
+  id               Int      @id @default(autoincrement())
+  organisationName String   @unique
+  registerPersonName String ?
+  founderFirstName String?
+  founderLastName  String?
+  mobileNumber     String?
+  typeOfSchool String?
+  syllubusType String?
+  addressLine1 String?
+  addressLine2 String?
+  email            String?
+  city             String?
+  state            String?
+  pincode          String?
+  mandal           String?
+  founderEmail     String?
+  founderPassword  String?
+  branches         Branch[]
+  users            User[]
+}
+
+
+model Branch {
+  id               Int          @id @default(autoincrement())
+  name             String
+  organisationId   Int?
+  organisationName String
+  mobileNumber String?
+  founderName      String?
+  mainBranch Boolean @default(false) 
+  organisation     Organisation @relation(fields: [organisationName], references: [organisationName])
+  city             String?
+  state            String?
+  pincode          String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  users            User[]
+}
+
+model User {
+  id               Int          @id @default(autoincrement())
+  name             String?
+  email            String? @unique
+  phoneNumber      String?
+  password         String?
+  role             String?
+  branchId         Int?
+  Branch           Branch?      @relation(fields: [branchId], references: [id])
+  organisationName String
+  branchName       String?
+  resetCode String?
+  loginOtp String?
+  otpExpiresAt DateTime?
+  organisation     Organisation @relation(fields: [organisationName], references: [organisationName])
+}
+
+model Student {
+  id               Int               @id @default(autoincrement())
+  studentImg String?
+  loginId          Int?
+  firstName        String?
+  lastName         String?
+  dob              DateTime?
+  gender           String?
+  bloodGroup String?
+  fatherName       String?
+  motherName       String?
+  fatherOccupation String?
+  motherOccupation String?
+  emergencyContactName  String?
+  emergencyContactNumber Int? 
+  email            String?
+  mobileNumber     Int?
+  religion         String?
+  nationality      String?
+  address          String?
+  userName         String?
+  password         String?
+  academicDetails  academicDetails[]
+}
+
+model academicDetails {
+  id                      Int       @id @default(autoincrement())
+  class                   String?
+  modeOfTransportation    String?
+  IdentificationMarks     String?
+  studyConductCertificate String?
+  transferCertificate     String?
+  dateOfJoining           DateTime?
+  student                 Int
+  studentData             Student   @relation(fields: [student], references: [id])
+}
+
+model Teachers {
+  id               Int                   @id @default(autoincrement())
+  loginId          Int?
+  branchName String?
+  teacherImg String?
+  firstName        String?
+  lastName         String?
+  dob              DateTime?
+  dateOfJoining    DateTime?
+  gender           String?  
+  fatherName       String?
+  motherName       String?
+  experience String?
+  previousPosition String?
+  previousWorkPlace String?
+  yearOfGraduation DateTime?
+  tenthMarksMemo String?
+  intermediateMarksMemo String?
+  graduationCertificate String?
+  experienceCertificate String?
+  aadharNumber String?
+  bankPassbook String?
+  email            String?
+  mobileNumber     Int?
+  religion         String?
+  nationality      String?
+  bloodGroup String?
+  address          String?
+  userName         String?
+  password         String?
+  employeeData     employeeInformation[]
+}
+
+model nonTeachingStaff {
+  id               Int                   @id @default(autoincrement())
+  loginId          Int?
+  img String?
+  firstName        String?
+  lastName         String?
+  dob              DateTime?
+  dateOfJoining    DateTime?
+  gender           String?
+  fatherName       String?
+  motherName       String?
+  email            String?
+  experience String?
+  previousPosition String?
+  previousWorkPlace String?
+  tenthMarksMemo String?
+  intermediateMarksMemo String?
+  graduationCertificate String?
+  experienceCertificate String?
+  aadharNumber String?
+  bankPassbook String?
+  mobileNumber     Int?
+  religion         String?
+  nationality      String?
+  address          String?
+  userName         String?
+  password         String?
+  employeeData     employeeInformation[]
+}
+
+model management {
+  id               Int                   @id @default(autoincrement())
+  img String?
+  loginId          Int?
+  firstName        String?
+  lastName         String?
+  dob              DateTime?
+  dateOfJoining    DateTime?
+  gender           String?
+  fatherName       String?
+  motherName       String?
+  email            String?
+  experience String?
+  previousPosition String?
+  previousWorkPlace String?
+  yearOfGraduation DateTime?
+  tenthMarksMemo String?
+  intermediateMarksMemo String?
+  graduationCertificate String?
+  experienceCertificate String?
+  aadharNumber String?
+  bankPassbook String?
+  mobileNumber     Int?
+  religion         String?
+  nationality      String?
+  address          String?
+  userName         String?
+  password         String?
+  employeeData     employeeInformation[]
+}
+
+model employeeInformation {
+  id                   Int              @id @default(autoincrement())
+  subject              String?
+  qualification        String?
+  experience           String?
+  dateOfGraduation     DateTime?
+  dateOfJoining        DateTime?
+  class                String?
+  teacher              Int
+  nonTeachingStaff     Int
+  management           Int
+  teacherData          Teachers         @relation(fields: [teacher], references: [id])
+  nonTeachingStaffData nonTeachingStaff @relation(fields: [nonTeachingStaff], references: [id])
+  managementData       management       @relation(fields: [management], references: [id])
+}
+
+
+model updatedStudent{
+  id Int @id @default(autoincrement())
+  studentName String
+  gender String
+  dateOfBirth DateTime 
+  motherTougue String
+  studentAaadharNumber Int
+  rationCardNumber Int
+  fatherName String
+  fatherQualification String
+  fatherAadharNumber Int
+  motherName String
+  motherQualification String
+  motherAadharNumber Int
+  motherBankName String
+  parentAddress String
+  caste String
+  nationality String
+  class String
+  lastSchoolStudied String
+  dateOfAdmission DateTime
+  tcStatus Boolean
+  }
