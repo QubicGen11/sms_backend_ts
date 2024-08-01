@@ -6,6 +6,16 @@ const prisma = new PrismaClient();
 export const createBranch = async (req: Request, res: Response): Promise<Response> => {
   const { name, organisationName, founderName, mobileNumber, city, state, pincode, mainBranch } = req.body;
   try {
+    //find organisation
+    const organisation = await prisma.organisation.findUnique({
+      where: { organisationName },
+    });
+
+    if (!organisation) {
+      return res.status(400).send('Organisation does not exist.');
+    }
+
+
     // Check if the branch already exists by its name
     const existingBranch = await prisma.branch.findFirst({
       where: {
@@ -28,6 +38,11 @@ export const createBranch = async (req: Request, res: Response): Promise<Respons
         state,
         pincode,
         mainBranch: mainBranch || false, // Default to false if not provided
+        organisation: {
+          connect: {
+            id: organisation.id,
+          },
+        },
       },
     });
     return res.status(201).json(newBranch);

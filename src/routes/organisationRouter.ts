@@ -4,5 +4,6 @@ const router=Router()
 
 router.post('/newOrganisation',createNewOrganisation)
 router.post('/checkOrg',checkExistingOrganisation)
+// router.delete('/clear-organisation-table', clearOrganisationTable);
 
 export default router

@@ -49,15 +49,10 @@ export const createNewOrganisation = async (req: OrganisationCreationRequest, re
 
   try {
     // Check if organisation already exists
-    const existingOrganisation = await prisma.organisation.findUnique({
+    const existingOrganisation = await prisma.organisation.findFirst({
       where: { organisationName }
     });
-
-    if (existingOrganisation) {
-      logger.warn(`Organisation with email ${email} already exists.`);
-      return res.status(400).json({ message: 'Organisation already exists.' });
-    }
-
+  
     // Hash the founder's password
     const hashedPassword = await bcrypt.hash(founderPassword, 10);
 
@@ -123,7 +118,7 @@ export const createNewOrganisation = async (req: OrganisationCreationRequest, re
     res.status(201).json(newOrganisation);
   } catch (error: any) {
     logger.error(`Error creating organisation: ${error.message}`);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json('internal error'+error.message);
   } finally {
     await prisma.$disconnect();
   }
@@ -150,3 +145,17 @@ export const checkExistingOrganisation = async (req: Request, res: Response) => 
     return res.status(500).send(`Internal server error: ${error.message}`);
   }
 };
+// export const clearOrganisationTable = async (req:Request, res:Response) => {
+//   try {
+//     // Clear all records from the organisation table
+//     await prisma.organisation.deleteMany({});
+//     logger.info('Organisation table cleared');
+//     res.status(200).json({ message: 'Organisation table cleared' });
+//   } catch (error:any) {
+//     logger.error(`Error clearing organisation table: ${error.message}`);
+//     res.status(500).json({ error: 'An error occurred while clearing the organisation table' });
+//   } finally {
+//     await prisma.$disconnect();
+//   }
+// };
+

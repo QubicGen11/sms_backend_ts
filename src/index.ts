@@ -4,6 +4,7 @@ import logger from './helpers/logger';
 import organisationRouter from './routes/organisationRouter'
 import branchRouter from './routes/branchRouter'
 import passwordRouter from './routes/passwordRoutes'
+import authenticationRouter from './routes/authenticationRouter'
 import { limiter } from './helpers/rateLimitter';
 import cors from 'cors'
 dotenv.config();
@@ -13,14 +14,18 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(limiter)
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:5173',  // Allow requests only from this origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Specify which methods are allowed
+  allowedHeaders: ['Content-Type', 'Authorization'],  // Specify which headers are allowed
+  credentials: true  // Allow cookies to be sent with the request
+}));
 
 
 app.use('/sms',organisationRouter)
 app.use('/sms',branchRouter)
 app.use('/sms',limiter,passwordRouter)
-
-
+app.use('/sms',authenticationRouter)
 
 
 app.get('/', (req: Request, res: Response) => {
