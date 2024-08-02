@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { Response, Request } from "express";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = 'your_secret_key' 
+const JWT_SECRET = 'your_secret_key';
 
 export const userLogin = async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -26,13 +26,13 @@ export const userLogin = async (req: Request, res: Response) => {
         }
 
         // Password matches, generate a JWT token
-        const token = jwt.sign({ userId: user.id,role:user.role }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
 
-        // Send the token to the client
-        return res.status(200).json({ message: 'Login successful', token });
-        
+        // Send the token and user role to the client
+        return res.status(200).json({ message: 'Login successful', token, role: user.role });
+
     } catch (error: any) {
         console.error(error);
-        return res.status(500).send('Internal server error' + error.message);
+        return res.status(500).send('Internal server error: ' + error.message);
     }
 };

@@ -52,22 +52,24 @@ model Branch {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  name             String?
-  email            String?       @unique
-  phoneNumber      String?
-  password         String?
-  role             String?
-  branchId         Int?
-  Branch           Branch?       @relation(fields: [branchId], references: [id])
-  organisationName String?
-  branchName       String?
-  resetCode        String?
-  loginOtp         String?
-  otpExpiresAt     DateTime?
-  studentID        Int?
-  students         Student?      @relation(fields: [studentID], references: [id])
-  organisation     Organisation? @relation(fields: [organisationName], references: [organisationName])
+  id                    Int                     @id @default(autoincrement())
+  name                  String?
+  email                 String?                 @unique
+  phoneNumber           String?
+  password              String?
+  role                  String?
+  branchId              Int?
+  Branch                Branch?                 @relation(fields: [branchId], references: [id])
+  organisationName      String?
+  branchName            String?
+  resetCode             String?
+  loginOtp              String?
+  otpExpiresAt          DateTime?
+  studentID             Int?
+  accessGroup           Int?
+  accessManagementGroup accessManagementGroups? @relation(fields: [accessGroup], references: [id])
+  students              Student?                @relation(fields: [studentID], references: [id])
+  organisation          Organisation?           @relation(fields: [organisationName], references: [organisationName])
 }
 
 model Student {
@@ -251,28 +253,45 @@ model employeeInformation {
 //   dateOfAdmission      DateTime
 //   tcStatus             Boolean
 // }
+model accessManagementGroups {
+  id        Int       @id @default(autoincrement())
+  groupName String?
+  featureId Int?
+  user      User[]
+  feature   features? @relation(fields: [featureId], references: [id])
+}
 
 model features {
   id                     Int                      @id @default(autoincrement())
-  featureName            String
+  featureName String
   createAccess           Boolean                  @default(false)
   editAccess             Boolean                  @default(false)
   viewAccess             Boolean                  @default(true)
   deleteAccess           Boolean                  @default(false)
-  roles                  Role[]
+  roleId String?
+  roles Role? @relation(fields: [roleId],references: [id])
   accessManagementGroups accessManagementGroups[]
+  roleFeatures RoleFeature[]
 }
-
 model Role {
-  id        Int      @id @default(autoincrement())
-  roleName  String?
-  featureId Int
-  feature   features @relation(fields: [featureId], references: [id])
+  id           String          @id @default(uuid())
+  roleName     String?
+  featureId    Int?
+  features features[]
+  roleFeatures RoleFeature[]
 }
+model RoleFeature {
+  id         Int      @id @default(autoincrement())
+  roleId     String
+  featureId  Int
+  roleName String?
+  role       Role     @relation(fields: [roleId], references: [id])
+  feature    features  @relation(fields: [featureId], references: [id])
+  createAccess Boolean
+  editAccess   Boolean
+  viewAccess   Boolean
+  deleteAccess Boolean
 
-model accessManagementGroups {
-  id        Int      @id @default(autoincrement())
-  groupName String?
-  featureId Int
-  feature   features @relation(fields: [featureId], references: [id])
+  @@unique([roleId, featureId])
 }
+  
