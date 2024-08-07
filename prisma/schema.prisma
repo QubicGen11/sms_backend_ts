@@ -9,13 +9,13 @@ generator client {
 
 model Organisation {
   id                 String             @id @default(uuid())
-  organisationName   String             @unique
+  name               String             @unique
   registerPersonName String?
   founderFirstName   String?
   founderLastName    String?
   mobileNumber       String?
   typeOfSchool       String?
-  syllubusType       String?
+  syllabusType       String?
   addressLine1       String?
   addressLine2       String?
   email              String?
@@ -27,21 +27,21 @@ model Organisation {
   founderPassword    String?
   branches           Branch[]
   students           Student[]
-  teachers           Teachers[]
-  nonTeachingStaff   nonTeachingStaff[]
-  management         management[]
-  academicDetails    academicDetails[]
+  teachers           Teacher[]
+  nonTeachingStaff   NonTeachingStaff[]
+  management         Management[]
+  academicDetails    AcademicDetail[]
   users              User[]
 }
 
 model Branch {
   id               Int          @id @default(autoincrement())
   name             String
-  organisationId   String
+  organisationId   String 
   organisationName String
   mobileNumber     String?
   founderName      String?
-  mainBranch       Boolean      @default(false)
+  mainBranch       Boolean ?     @default(false)
   organisation     Organisation @relation(fields: [organisationId], references: [id])
   city             String?
   state            String?
@@ -59,17 +59,18 @@ model User {
   password              String?
   role                  String?
   branchId              Int?
-  Branch                Branch?                 @relation(fields: [branchId], references: [id])
+  branch                Branch?                 @relation(fields: [branchId], references: [id])
   organisationName      String?
   branchName            String?
   resetCode             String?
   loginOtp              String?
   otpExpiresAt          DateTime?
-  studentID             Int?
-  accessGroup           Int?
-  accessManagementGroup accessManagementGroups? @relation(fields: [accessGroup], references: [id])
-  students              Student?                @relation(fields: [studentID], references: [id])
-  organisation          Organisation?           @relation(fields: [organisationName], references: [organisationName])
+  studentId             Int?
+  accessGroupId         Int?
+  accessGroupName String?
+  accessGroup           AccessManagementGroup?  @relation(fields: [accessGroupId], references: [id])
+  student               Student?                @relation(fields: [studentId], references: [id])
+  organisation          Organisation?           @relation(fields: [organisationName], references: [name])
 }
 
 model Student {
@@ -86,9 +87,9 @@ model Student {
   fatherOccupation       String?
   motherOccupation       String?
   emergencyContactName   String?
-  emergencyContactNumber Int?
+  emergencyContactNumber String?
   email                  String?
-  mobileNumber           Int?
+  mobileNumber           String?
   religion               String?
   nationality            String?
   address                String?
@@ -97,24 +98,24 @@ model Student {
   organisationId         String
   organisation           Organisation      @relation(fields: [organisationId], references: [id])
   users                  User[]
-  academicDetails        academicDetails[]
+  academicDetails        AcademicDetail[]
 }
 
-model academicDetails {
+model AcademicDetail {
   id                      Int          @id @default(autoincrement())
   class                   String?
   modeOfTransportation    String?
-  IdentificationMarks     String?
+  identificationMarks     String?
   studyConductCertificate String?
   transferCertificate     String?
   dateOfJoining           DateTime?
-  student                 Int
+  studentId               Int
   organisationId          String
   organisation            Organisation @relation(fields: [organisationId], references: [id])
-  studentData             Student      @relation(fields: [student], references: [id])
+  student                 Student      @relation(fields: [studentId], references: [id])
 }
 
-model Teachers {
+model Teacher {
   id                    Int                   @id @default(autoincrement())
   loginId               Int?
   branchName            String?
@@ -137,7 +138,7 @@ model Teachers {
   aadharNumber          String?
   bankPassbook          String?
   email                 String?
-  mobileNumber          Int?
+  mobileNumber          String?
   religion              String?
   nationality           String?
   bloodGroup            String?
@@ -146,10 +147,10 @@ model Teachers {
   password              String?
   organisationId        String
   organisation          Organisation          @relation(fields: [organisationId], references: [id])
-  employeeData          employeeInformation[]
+  employeeInformation   EmployeeInformation[]
 }
 
-model nonTeachingStaff {
+model NonTeachingStaff {
   id                    Int                   @id @default(autoincrement())
   loginId               Int?
   img                   String?
@@ -170,7 +171,7 @@ model nonTeachingStaff {
   experienceCertificate String?
   aadharNumber          String?
   bankPassbook          String?
-  mobileNumber          Int?
+  mobileNumber          String?
   religion              String?
   nationality           String?
   address               String?
@@ -178,10 +179,10 @@ model nonTeachingStaff {
   password              String?
   organisationId        String
   organisation          Organisation          @relation(fields: [organisationId], references: [id])
-  employeeData          employeeInformation[]
+  employeeInformation   EmployeeInformation[]
 }
 
-model management {
+model Management {
   id                    Int                   @id @default(autoincrement())
   img                   String?
   loginId               Int?
@@ -203,7 +204,7 @@ model management {
   experienceCertificate String?
   aadharNumber          String?
   bankPassbook          String?
-  mobileNumber          Int?
+  mobileNumber          String?
   religion              String?
   nationality           String?
   address               String?
@@ -211,10 +212,10 @@ model management {
   password              String?
   organisationId        String
   organisation          Organisation          @relation(fields: [organisationId], references: [id])
-  employeeData          employeeInformation[]
+  employeeInformation   EmployeeInformation[]
 }
 
-model employeeInformation {
+model EmployeeInformation {
   id                   Int              @id @default(autoincrement())
   subject              String?
   qualification        String?
@@ -222,76 +223,58 @@ model employeeInformation {
   dateOfGraduation     DateTime?
   dateOfJoining        DateTime?
   class                String?
-  teacher              Int
-  nonTeachingStaff     Int
-  management           Int
-  teacherData          Teachers         @relation(fields: [teacher], references: [id])
-  nonTeachingStaffData nonTeachingStaff @relation(fields: [nonTeachingStaff], references: [id])
-  managementData       management       @relation(fields: [management], references: [id])
+  teacherId            Int?
+  nonTeachingStaffId   Int?
+  managementId         Int?
+  teacher              Teacher?         @relation(fields: [teacherId], references: [id])
+  nonTeachingStaff     NonTeachingStaff? @relation(fields: [nonTeachingStaffId], references: [id])
+  management           Management?      @relation(fields: [managementId], references: [id])
 }
 
-// model updatedStudent {
-//   id                   Int      @id @default(autoincrement())
-//   studentName          String
-//   gender               String
-//   dateOfBirth          DateTime
-//   motherTougue         String
-//   studentAaadharNumber Int
-//   rationCardNumber     Int
-//   fatherName           String
-//   fatherQualification  String
-//   fatherAadharNumber   Int
-//   motherName           String
-//   motherQualification  String
-//   motherAadharNumber   Int
-//   motherBankName       String
-//   parentAddress        String
-//   caste                String
-//   nationality          String
-//   class                String
-//   lastSchoolStudied    String
-//   dateOfAdmission      DateTime
-//   tcStatus             Boolean
-// }
-model accessManagementGroups {
+model AccessManagementGroup {
   id        Int       @id @default(autoincrement())
   groupName String?
   featureId Int?
-  user      User[]
-  feature   features? @relation(fields: [featureId], references: [id])
+  roleName String?
+  roleId      String? 
+  groupType String? 
+  role        Role?    @relation(fields: [roleId], references: [id]) 
+  users     User[]
+  feature   Feature?  @relation(fields: [featureId], references: [id])
 }
 
-model features {
+model Feature {
   id                     Int                      @id @default(autoincrement())
-  featureName String
+  name                   String
   createAccess           Boolean                  @default(false)
   editAccess             Boolean                  @default(false)
   viewAccess             Boolean                  @default(true)
   deleteAccess           Boolean                  @default(false)
-  roleId String?
-  roles Role? @relation(fields: [roleId],references: [id])
-  accessManagementGroups accessManagementGroups[]
-  roleFeatures RoleFeature[]
+  roleId                 String?
+  role                   Role?                    @relation(fields: [roleId], references: [id])
+  accessManagementGroups AccessManagementGroup[]
+  roleFeatures           RoleFeature[]
 }
+
 model Role {
   id           String          @id @default(uuid())
-  roleName     String?
+  name         String?
   featureId    Int?
-  features features[]
+  features     Feature[]
   roleFeatures RoleFeature[]
+  groups AccessManagementGroup[]
 }
+
 model RoleFeature {
-  id         Int      @id @default(autoincrement())
-  roleId     String
-  featureId  Int
-  roleName String?
-  role       Role     @relation(fields: [roleId], references: [id])
-  feature    features  @relation(fields: [featureId], references: [id])
+  id           Int      @id @default(autoincrement())
+  roleId       String
+  featureId    Int
+  roleName     String?
+  role         Role     @relation(fields: [roleId], references: [id])
+  feature      Feature  @relation(fields: [featureId], references: [id])
   createAccess Boolean
   editAccess   Boolean
   viewAccess   Boolean
   deleteAccess Boolean
-
   @@unique([roleId, featureId])
 }
-  

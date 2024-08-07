@@ -1,9 +1,6 @@
 import { Router } from "express";
-import {createNewOrganisation,checkExistingOrganisation} from "../controllers/organisationController";
+import organisationOperations  from '../controllers/organisationController'
 const router=Router()
 
-router.post('/newOrganisation',createNewOrganisation)
-router.post('/checkOrg',checkExistingOrganisation)
-// router.delete('/clear-organisation-table', clearOrganisationTable);
-
+router.post('/neworg',organisationOperations.createOrganisation)
 export default router

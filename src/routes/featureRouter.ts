@@ -1,8 +1,5 @@
 import { Router } from "express";
-import { getAllFeatures, insertDefaultFeatures } from "../controllers/featuredController";
-
+import featureOperations from "../controllers/featuredController";
 const router=Router()
-
-router.post('/insertfeatures',insertDefaultFeatures)
-router.get('/allfeatures',getAllFeatures)
+router.get('/allfeatures',featureOperations.getAllFeatures)
 export default router

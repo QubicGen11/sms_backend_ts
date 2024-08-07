@@ -1,9 +1,7 @@
 import { Router } from "express";
-import {createNewRole,updateRole,deleteRole, getRoles} from '../controllers/roleController'
+import roleOperations from "../controllers/roleController";
 const router=Router()
 
-router.post('/newRole',createNewRole)
-router.post('/updateRole',updateRole)
-router.delete('/deleteRole',deleteRole)
-router.get('/allroles',getRoles)
+router.post('/newrole',roleOperations.createRole)
+router.post('/assignroletouser',roleOperations.assignRoleToUser)
 export default router

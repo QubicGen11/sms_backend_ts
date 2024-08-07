@@ -1,145 +1,95 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
+import { Response, Request } from "express";
+import logger from '../helpers/logger';
 
 const prisma = new PrismaClient();
 
-// Create a new role and update features with role-specific access
-export const createNewRole = async (req: Request, res: Response) => {
-  const { roleName, features } = req.body;
+interface CreateRoleRequest {
+  roleName: string;
+  features: {
+    id: number; // Feature ID
+    createAccess?: boolean;
+    editAccess?: boolean;
+    viewAccess?: boolean;
+    deleteAccess?: boolean;
+  }[];
+}
 
-  try {
-    // Check if the role already exists
-    const existingRole = await prisma.role.findFirst({
-      where: { roleName }
-    });
+class roleOperations {
+  static createRole = async (req: Request, res: Response) => {
+    const { roleName, features }: CreateRoleRequest = req.body;
+    try {
+      // Create a new role
+      const newRole = await prisma.role.create({
+        data: {
+          name: roleName
+        }
+      });
+      // Assign permissions to features
+      const roleFeaturePromises = features.map(feature => 
+        prisma.roleFeature.create({
+          data: {
+            roleId: newRole.id,
+            featureId: feature.id,
+            createAccess: feature.createAccess ?? false,
+            editAccess: feature.editAccess ?? false,
+            viewAccess: feature.viewAccess ?? true,
+            deleteAccess: feature.deleteAccess ?? false
+          }
+        })
+      );
 
-    if (existingRole) {
-      return res.status(400).json({ message: 'Role already exists' });
+      await Promise.all(roleFeaturePromises);
+
+      return res.status(201).json({ message: 'Role created successfully', role: newRole });
+    } catch (error: any) {
+      logger.error('Error creating role and assigning permissions', error);
+      return res.status(500).send('Internal server error: ' + error.message);
     }
-
-    // Create a new role
-    const newRole = await prisma.role.create({
-      data: { roleName }
-    });
-
-    // Create role features
-    await prisma.roleFeature.createMany({
-      data: features.map((feature: any) => ({
-        roleId: newRole.id,
-        roleName:roleName,
-        featureId: feature.featureId,
-        createAccess: feature.createAccess,
-        editAccess: feature.editAccess,
-        viewAccess: feature.viewAccess,
-        deleteAccess: feature.deleteAccess
-      }))
-    });
-
-    // Fetch the created role along with its features
-    const createdRole = await prisma.role.findUnique({
-      where: { id: newRole.id },
-      include: { roleFeatures: true }
-    });
-
-    res.status(201).json(createdRole);
-  } catch (error) {
-    console.error('Error creating role:', error);
-    res.status(500).json({ message: 'Error creating role', error });
   }
-};
+  static assignRoleToUser = async (req: Request, res: Response) => {
+    const { roleId, userId } = req.body;
 
-// Update an existing role and features with role-specific access
-export const updateRole = async (req: Request, res: Response) => {
-  const { roleId, roleName, features } = req.body;
+    try {
+        // Ensure roleId and userId are provided and are strings
+        if (!roleId || !userId) {
+            return res.status(400).json({ message: 'roleId and userId are required' });
+        }
 
-  try {
-    // Check if the role exists
-    const existingRole = await prisma.role.findUnique({
-      where: { id: roleId }
-    });
+        const isExistingRole = await prisma.role.findFirst({
+            where: {
+                id: roleId
+            }
+        });
 
-    if (!existingRole) {
-      return res.status(404).json({ message: 'Role not found' });
+        if (!isExistingRole) {
+            return res.status(400).json({ message: 'Role does not exist' });
+        }
+
+        const isExistingUser = await prisma.user.findFirst({
+            where: {
+                id: userId
+            }
+        });
+
+        if (!isExistingUser) {
+            return res.status(400).json({ message: 'User does not exist' });
+        }
+
+        const addRoleToUser = await prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                role: isExistingRole.name
+            }
+        });
+
+        return res.status(200).json(addRoleToUser);
+    } catch (error: any) {
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
+}
+}
 
-    // Update the role name
-    const updatedRole = await prisma.role.update({
-      where: { id: roleId },
-      data: { roleName }
-    });
-
-    // Delete old role features
-    await prisma.roleFeature.deleteMany({
-      where: { roleId }
-    });
-
-    // Create new role features
-    await prisma.roleFeature.createMany({
-      data: features.map((feature: any) => ({
-        roleId: roleId,
-        roleName:roleName,
-        featureId: feature.featureId,
-        createAccess: feature.createAccess,
-        editAccess: feature.editAccess,
-        viewAccess: feature.viewAccess,
-        deleteAccess: feature.deleteAccess
-      }))
-    });
-
-    // Fetch the updated role along with its features
-    const fetchedUpdatedRole = await prisma.role.findUnique({
-      where: { id: roleId },
-      include: { roleFeatures: true }
-    });
-
-    res.status(200).json(fetchedUpdatedRole);
-  } catch (error) {
-    console.error('Error updating role:', error);
-    res.status(500).json({ message: 'Error updating role', error });
-  }
-};
-
-// Delete a role and disassociate its features
-export const deleteRole = async (req: Request, res: Response) => {
-  const { roleId } = req.params;
-
-  try {
-    // Check if the role exists
-    const existingRole = await prisma.role.findUnique({
-      where: { id: roleId }
-    });
-
-    if (!existingRole) {
-      return res.status(404).json({ message: 'Role not found' });
-    }
-
-    // Delete role features
-    await prisma.roleFeature.deleteMany({
-      where: { roleId }
-    });
-
-    // Delete the role
-    await prisma.role.delete({
-      where: { id: roleId }
-    });
-
-    res.status(200).json({ message: 'Role and associated features deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting role:', error);
-    res.status(500).json({ message: 'Error deleting role', error });
-  }
-};
-
-// Fetch roles with associated features and access permissions
-export const getRoles = async (req: Request, res: Response) => {
-  try {
-    const roles = await prisma.role.findMany({
-      include: { roleFeatures: true }
-    });
-
-    res.status(200).json(roles);
-  } catch (error) {
-    console.error('Error fetching roles:', error);
-    res.status(500).json({ message: 'Error fetching roles', error });
-  }
-};
+export default roleOperations;

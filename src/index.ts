@@ -2,13 +2,15 @@ import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import logger from './helpers/logger';
 import organisationRouter from './routes/organisationRouter'
-import branchRouter from './routes/branchRouter'
 import passwordRouter from './routes/passwordRoutes'
 import authenticationRouter from './routes/authenticationRouter'
+import branchRouter from './routes/branchRouter'
+import roleRouter from './routes/roleRouter'
 import groupRouter from './routes/groupRouter'
 import featureRouter from './routes/featureRouter'
-import roleRouter from './routes/roleRouter'
 import { limiter } from './helpers/rateLimitter';
+import userRouter from './routes/userRouter'
+import morgan from 'morgan'
 import cors from 'cors'
 dotenv.config();
 
@@ -16,6 +18,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(morgan('dev'))
 // app.use(limiter)
 app.use(cors({
   origin: 'http://localhost:5173',  // Allow requests only from this origin
@@ -26,12 +29,14 @@ app.use(cors({
 
 
 app.use('/sms',organisationRouter)
-app.use('/sms',branchRouter)
-app.use('/sms',limiter,passwordRouter)
+// app.use('/sms',limiter,passwordRouter)
 app.use('/sms',authenticationRouter)
+app.use('/sms',branchRouter)
+app.use('/sms',roleRouter)
 app.use('/sms',groupRouter)
 app.use('/sms',featureRouter)
-app.use('/sms',roleRouter)
+app.use('/sms',userRouter)
+
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello, TypeScript with Express!');
 });

@@ -1,7 +1,6 @@
 import { Router } from "express";
-import { createBranch,getBranchByOrganisation } from "../controllers/branchController";
+import branchOperations from "../controllers/branchController";
 const router=Router()
 
-router.post('/newBranch',createBranch)
-router.get('/branches/:orgname',getBranchByOrganisation)
+router.post('/newbranch',branchOperations.createOrganisation)
 export default router
