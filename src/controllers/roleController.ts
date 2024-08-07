@@ -49,7 +49,6 @@ class roleOperations {
   }
   static assignRoleToUser = async (req: Request, res: Response) => {
     const { roleId, userId } = req.body;
-
     try {
         // Ensure roleId and userId are provided and are strings
         if (!roleId || !userId) {
@@ -89,6 +88,18 @@ class roleOperations {
     } catch (error: any) {
         return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
+}
+static getAllRoles=async(req:Request,res:Response)=>{
+  try {
+    const getAllRoles=await prisma.role.findMany({
+    })
+    if(getAllRoles.length<=0){
+      return res.status(400).send('role data not available')
+    }
+    return res.status(200).send(getAllRoles)
+  } catch (error:any) {
+    return res.status(500).send('internal error'+error.message)
+  }
 }
 }
 
