@@ -27,7 +27,6 @@ app.use(cors({
   credentials: true  // Allow cookies to be sent with the request
 }));
 
-
 app.use('/sms',organisationRouter)
 // app.use('/sms',limiter,passwordRouter)
 app.use('/sms',authenticationRouter)

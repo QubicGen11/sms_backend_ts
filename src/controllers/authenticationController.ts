@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Response, Request } from "express";
-
+import decodeJwt from "../config/jwtDecode";
 const prisma = new PrismaClient();
 const JWT_SECRET =  process.env.JWT_SECRET || 'default key'
 
@@ -34,12 +34,11 @@ class Authentication {
 
             console.log('User role:', user.role); // Debugging line
             console.log('User Id:', user.id); // Debugging line
-
+            const decodedToken=decodeJwt(token)
             return res.status(200).json({
                 message: 'Login successful',
                 token,
-                role: user.role, // Ensure role is included in the response
-                id: user.id // Ensure user ID is included in the response
+                decodedToken,
             });
         } catch (error) {
             console.error('Login error:', error);
